@@ -1,7 +1,7 @@
 ---
 title: "Class 19 Mini Project Investigating Pertussis Resurgence"
 author: "Cameron Jones"
-format: pdf
+format: gfm
 ---
 
 Mini-Project
