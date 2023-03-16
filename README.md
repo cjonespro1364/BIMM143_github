@@ -1,2 +1,2 @@
 # BIMM143_github
-My classwork from BIMM143 WINTER23 at UC San Diego!
+My classwork from BIMM143 W23 at UC San Diego!
