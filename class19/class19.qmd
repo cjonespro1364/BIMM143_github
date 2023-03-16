@@ -1,0 +1,479 @@
+---
+title: "Class 19 Mini Project Investigating Pertussis Resurgence"
+author: "Cameron Jones"
+format: pdf
+---
+
+Mini-Project
+Investigating Pertussis Resurgence
+
+
+# Background
+
+Pertussis (more commonly known as whooping cough) is a highly contagious respiratory disease caused by the bacterium Bordetella pertussis. People of all ages can be infected leading to violent coughing fits followed by a high-pitched intake of breath that sounds like “whoop”. Infants and toddlers have the highest risk for severe complications and death. Recent estimates from the WHO suggest that ~16 million cases and 200,000 infant deaths are due to pertussis annually 1.
+
+# 1. Investigating pertussis cases by year
+
+The United States Centers for Disease Control and Prevention (CDC) has been compiling reported pertussis case numbers since 1922 in their National Notifiable Diseases Surveillance System (NNDSS). We can view this data on the CDC website here: https://www.cdc.gov/pertussis/surv-reporting/cases-by-year.html
+
+Using datapasta to copy/paste the data right from the website:
+
+```{r echo=FALSE}
+cdc <- data.frame(Year = c(
+  1922L,
+  1923L,
+  1924L,
+  1925L,
+  1926L,
+  1927L,
+  1928L,
+  1929L,
+  1930L,
+  1931L,
+  1932L,
+  1933L,
+  1934L,
+  1935L,
+  1936L,
+  1937L,
+  1938L,
+  1939L,
+  1940L,
+  1941L,
+  1942L,
+  1943L,
+  1944L,
+  1945L,
+  1946L,
+  1947L,
+  1948L,
+  1949L,
+  1950L,
+  1951L,
+  1952L,
+  1953L,
+  1954L,
+  1955L,
+  1956L,
+  1957L,
+  1958L,
+  1959L,
+  1960L,
+  1961L,
+  1962L,
+  1963L,
+  1964L,
+  1965L,
+  1966L,
+  1967L,
+  1968L,
+  1969L,
+  1970L,
+  1971L,
+  1972L,
+  1973L,
+  1974L,
+  1975L,
+  1976L,
+  1977L,
+  1978L,
+  1979L,
+  1980L,
+  1981L,
+  1982L,
+  1983L,
+  1984L,
+  1985L,
+  1986L,
+  1987L,
+  1988L,
+  1989L,
+  1990L,
+  1991L,
+  1992L,
+  1993L,
+  1994L,
+  1995L,
+  1996L,
+  1997L,
+  1998L,
+  1999L,
+  2000L,
+  2001L,
+  2002L,
+  2003L,
+  2004L,
+  2005L,
+  2006L,
+  2007L,
+  2008L,
+  2009L,
+  2010L,
+  2011L,
+  2012L,
+  2013L,
+  2014L,
+  2015L,
+  2016L,
+  2017L,
+  2018L,
+  2019L
+),
+Cases = c(
+  107473,
+  164191,
+  165418,
+  152003,
+  202210,
+  181411,
+  161799,
+  197371,
+  166914,
+  172559,
+  215343,
+  179135,
+  265269,
+  180518,
+  147237,
+  214652,
+  227319,
+  103188,
+  183866,
+  222202,
+  191383,
+  191890,
+  109873,
+  133792,
+  109860,
+  156517,
+  74715,
+  69479,
+  120718,
+  68687,
+  45030,
+  37129,
+  60886,
+  62786,
+  31732,
+  28295,
+  32148,
+  40005,
+  14809,
+  11468,
+  17749,
+  17135,
+  13005,
+  6799,
+  7717,
+  9718,
+  4810,
+  3285,
+  4249,
+  3036,
+  3287,
+  1759,
+  2402,
+  1738,
+  1010,
+  2177,
+  2063,
+  1623,
+  1730,
+  1248,
+  1895,
+  2463,
+  2276,
+  3589,
+  4195,
+  2823,
+  3450,
+  4157,
+  4570,
+  2719,
+  4083,
+  6586,
+  4617,
+  5137,
+  7796,
+  6564,
+  7405,
+  7298,
+  7867,
+  7580,
+  9771,
+  11647,
+  25827,
+  25616,
+  15632,
+  10454,
+  13278,
+  16858,
+  27550,
+  18719,
+  48277,
+  28639,
+  32971,
+  20762,
+  17972,
+  18975,
+  15609,
+  18617
+)
+       )
+```
+
+Plotting the data:
+
+>Q1. With the help of the R “addin” package datapasta assign the CDC pertussis case number data to a data frame called cdc and use ggplot to make a plot of cases numbers over time.
+
+```{r}
+library(ggplot2)
+baseplot <- ggplot(cdc) +
+  aes(Year, Cases) +
+  geom_point() +
+  geom_line() +
+   labs(title="Cases of Pertussis in US from 1920 to 2019", subtitle="Data from the CDC")
+baseplot
+```
+
+>Q2. Using the ggplot geom_vline() function add lines to your previous plot for the 1946 introduction of the wP vaccine and the 1996 switch to aP vaccine (see example in the hint below). What do you notice?
+
+```{r}
+baseplot + geom_vline(xintercept = 1946, col="blue") + geom_vline(xintercept = 1996, col="red")
+```
+
+>Q3. Describe what happened after the introduction of the aP vaccine? Do you have a possible explanation for the observed trend?
+
+After the aP vaccines, we see a noticeable rise in pertussis cases. The vaccine could be less effective, but this effect is compounded by the fact that many Americans are skeptical of vaccination nowadays. 
+
+#3. Exploring CMI-PB data
+
+The CMI-PB project is collecting data on aP and wP individuals and their immune response to infection and or booster shots.
+
+CMI-PB returns data from it's API in JSON format (like most APIs). We will use the jsonlite package to get data from this API.
+
+```{r}
+library(jsonlite)
+```
+
+```{r}
+subject <- read_json("https://www.cmi-pb.org/api/subject", simplifyVector = TRUE) 
+
+head(subject)
+```
+
+>Q4. How may aP and wP infancy vaccinated subjects are in the dataset?
+
+```{r}
+table(subject$infancy_vac)
+```
+>Q5. How many Male and Female subjects/patients are in the dataset?
+
+```{r}
+table(subject$biological_sex)
+```
+>Q6. What is the breakdown of race and biological sex (e.g. number of Asian females, White males etc…)?
+
+```{r}
+table(subject$race, subject$biological_sex)
+```
+
+>Q7. Using this approach determine (i) the average age of wP individuals, (ii) the average age of aP individuals; and (iii) are they significantly different?
+
+```{r}
+library(lubridate)
+
+```
+
+Calculate the age in years for all subjects:
+```{r}
+age_days <- today() - ymd(subject$year_of_birth)
+age_years <- time_length( age_days, "years")
+subject$age <- age_years
+```
+
+Now find the average age of all individuals:
+
+>Q8. Determine the age of all individuals at time of boost?
+
+```{r}
+mean(subject$age)
+```
+
+Now use dplyr to subset to wP or aP subjects
+
+```{r}
+library(dplyr)
+
+ap.age <- filter(subject, infancy_vac == "aP")$age
+wp.age <- filter(subject, infancy_vac == "wP")$age
+ap.age
+
+mean(ap.age)
+mean(wp.age)
+
+#T Test:
+
+t.test(ap.age, wp.age)
+
+```
+
+>Q9. With the help of a faceted boxplot (see below), do you think these two groups are significantly different?
+
+```{r}
+ggplot(subject) +
+  aes(time_length(age, "year"),
+      fill=as.factor(infancy_vac)) +
+  geom_histogram(show.legend=FALSE) +
+  facet_wrap(vars(infancy_vac), nrow=2) 
+```
+
+#Joining multiple tables
+
+```{r}
+# Complete the API URLs...
+specimen <- read_json("http://cmi-pb.org/api/specimen", simplifyVector = TRUE) 
+titer <- read_json("https://www.cmi-pb.org/api/ab_titer", simplifyVector = TRUE) 
+
+head(specimen)
+```
+
+>Q9. Complete the code to join specimen and subject tables to make a new merged data frame containing all specimen records along with their associated subject details:
+
+```{r}
+meta <- inner_join(specimen, subject)
+dim(meta)
+head(meta)
+```
+>Q10. Now using the same procedure join meta with titer data so we can further analyze this data in terms of time of visit aP/wP, male/female etc.
+
+```{r}
+abdata <- inner_join(titer, meta)
+dim(abdata)
+head(abdata)
+```
+
+>Q11. How many specimens (i.e. entries in abdata) do we have for each isotype?
+
+```{r}
+table(abdata$isotype)
+```
+
+>Q12. What do you notice about the number of visit 8 specimens compared to other visits?
+
+```{r}
+table(abdata$visit)
+```
+Visit 8 is way lower, implying they are still collecting data from patients' 8th visit.
+
+
+#4. Examine IgG1 Ab titer levels
+
+Now using our joined/merged/linked abdata dataset filter() for IgG1 isotype and exclude the small number of visit 8 entries.
+
+```{r}
+ig1 <- abdata %>% filter(isotype == "IgG1", visit!=8)
+head(ig1)
+```
+
+>Q13. Complete the following code to make a summary boxplot of Ab titer levels for all antigens:
+
+```{r}
+ggplot(ig1) +
+  aes(MFI, antigen) +
+  geom_boxplot() + 
+  facet_wrap(vars(visit), nrow=2)
+```
+
+>Q14. What antigens show differences in the level of IgG1 antibody titers recognizing them over time? Why these and not others?
+
+The FIM2/3 antigens show the most difference in antibodies over time. 
+
+```{r}
+ggplot(ig1) +
+  aes(MFI, antigen, col=infancy_vac ) +
+  geom_boxplot(show.legend = FALSE) + 
+  facet_wrap(vars(visit), nrow=2) +
+  theme_bw()
+```
+
+>Q15. Filter to pull out only two specific antigens for analysis and create a boxplot for each. You can chose any you like. Below I picked a “control” antigen (“Measles”, that is not in our vaccines) and a clear antigen of interest (“FIM2/3”, extra-cellular fimbriae proteins from B. pertussis that participate in substrate attachment).
+
+```{r}
+filter(ig1, antigen=="Measles") %>%
+  ggplot() +
+  aes(MFI, col=infancy_vac) + labs(title="Measles antigen levels per visit. aP in red, wP in blue") +
+  geom_boxplot(show.legend = FALSE) +
+  facet_wrap(vars(visit)) +
+  theme_bw()
+```
+
+And the same for antigen=="FIM2/3"
+
+```{r}
+filter(ig1, antigen=="FIM2/3") %>%
+  ggplot() +
+  aes(MFI, col=infancy_vac) + labs(title="FIM2/3 antigen levels per visit. aP in red, wP in blue") +
+  geom_boxplot(show.legend = FALSE) +
+  facet_wrap(vars(visit)) +
+  theme_bw()
+```
+
+>Q16. What do you notice about these two antigens time course and the FIM2/3 data in particular?
+
+FIM2/3 is higher than Measles, and they peak at visit 5. This is similar for aP and wP patients.
+
+>Q17. Do you see any clear difference in aP vs. wP responses?
+
+wP data is slightly higher than aP in the Measles data. In the FIM2/3 data, wp starts out higher before it is passed by aP in red.
+
+
+#5. Obtaining CMI-PB RNASeq data
+
+```{r}
+url <- "https://www.cmi-pb.org/api/v2/rnaseq?versioned_ensembl_gene_id=eq.ENSG00000211896.7"
+
+rna <- read_json(url, simplifyVector = TRUE) 
+head(rna)
+```
+
+
+```{r}
+ssrna <- inner_join(rna, meta)
+```
+
+>Q18. Make a plot of the time course of gene expression for IGHG1 gene (i.e. a plot of visit vs. tpm)
+
+```{r}
+ggplot(ssrna) +
+  aes(visit, tpm, group=subject_id) +
+  geom_point() +
+  geom_line(alpha=0.2)
+```
+
+>Q19.: What do you notice about the expression of this gene (i.e. when is it at it’s maximum level)?
+
+It peaks at day 4 before sharply declining.
+
+>Q20. Does this pattern in time match the trend of antibody titer data? If not, why not?
+
+Not necessarily. This data shows a peak at 4 days and then a rapid decline. For the ab data, the levels remain high after 5 days. This is because antibodies stay around for a long time.
+
+
+```{r}
+ggplot(ssrna) +
+  aes(tpm, col=infancy_vac) +
+  geom_boxplot() +
+  facet_wrap(vars(visit))
+```
+
+```{r}
+ssrna %>%  
+  filter(visit==4) %>% 
+  ggplot() +
+    aes(tpm, col=infancy_vac) + geom_density() + 
+    geom_rug()
+```
+
+
+
