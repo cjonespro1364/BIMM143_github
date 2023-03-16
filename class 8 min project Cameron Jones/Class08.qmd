@@ -1,0 +1,258 @@
+---
+title: "class 8 mini project"
+author: Cameron Jones
+format: gfm
+---
+
+In today's mini-project we will explore a complete analysis using the unsupervised learning techniques covered in class (clustering and PCA for now).
+
+The data itself comes from the Wisconsin Breast Cancer Diagnostic Data Set FNA breast biopsy data. 
+
+```{r}
+wisc.df <- read.csv("WisconsinCancer.csv", row.names=1)
+head(wisc.df)
+```
+
+Remove the Diagnosis column and keep it in a separate vector for later.
+```{r}
+diagnosis <- as.factor(wisc.df[,1])
+wisc.data <- wisc.df[,-1]
+head(wisc.data)
+```
+
+##Exploratory data analysis
+The first step of any data analysis, unsupervised or supervised, is to familiarize yourself with the data.
+
+>Q1. How many observations are in this dataset?
+
+```{r}
+nrow(wisc.data)
+```
+
+
+>Q2. How many of the observations have a malignant diagnosis?
+
+```{r}
+table(wisc.df$diagnosis)
+```
+
+
+>Q3. How many variables/features in the data are suffixed with _mean?
+
+First find the column names
+```{r}
+colnames(wisc.data)
+```
+
+Next I need to search within the column names for "_mean" pattern. The 'grep()' function might help here.
+
+```{r}
+inds <- grep("_mean", colnames(wisc.data))
+length(inds)
+```
+
+>Q How many dimensions are in this dataset?
+
+```{r}
+ncol(wisc.data)
+```
+
+# Principal Component Analysis
+
+First do we need to scale the data before PCA or not
+
+```{r}
+round(apply(wisc.data, 2, sd), 2)
+```
+
+Looks like we need to scale.
+
+```{r}
+#Perform PCA on wisc.data by completing the following code
+wisc.pr <- prcomp(wisc.data, scale=TRUE)
+summary(wisc.pr)
+```
+
+>Q4. From your results, what proportion of the original variance is captured by the first principal components (PC1)?
+
+44.27%
+
+>Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?
+
+3 PCs capture 72.64%
+
+>Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?
+
+7 PCs capture 91.01%
+
+## PC plot
+
+
+We need to make our plot of PC1 vs PC2 (aka score plot, PC-plot, etc). The main result of PCA:
+
+
+
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=diagnosis)
+```
+
+```{r}
+library(ggplot2)
+
+pc <- as.data.frame(wisc.pr$x)
+pc$diagnosis <- diagnosis
+
+ggplot(pc) + aes(PC1, PC2, col=diagnosis) +geom_point()
+```
+Repeat for PC1 and PC3
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,3], col=diagnosis)
+```
+>Q8. Generate a similar plot for principal components 1 and 3. What do you notice about these plots?
+
+These plots are strikingly similar in terms of the location of the two clusters of data in relation to one another. 
+
+## Variance Explained
+
+We can get this from the output of the 'summary()' function.
+
+```{r}
+summary(wisc.pr)
+```
+
+
+Calculate the variance of each principal component by squaring the sdev component of wisc.pr (i.e. wisc.pr$sdev^2). Save the result as an object called pr.var.
+
+```{r}
+#Calculate Variance of each component
+pr.var <- wisc.pr$sdev^2
+head(pr.var)
+```
+Calculate the variance explained by each principal component by dividing by the total variance explained of all principal components. Assign this to a variable called pve and create a plot of variance explained for each principal component.
+
+```{r}
+pve <- (wisc.pr$sdev^2)/sum(wisc.pr$sdev^2)
+```
+
+
+```{r}
+plot(pve, xlab = "Principal Component", ylab= "Proportion of Variance Explained", type = "o")
+```
+```{r}
+# Alternative scree plot of the same data, note data driven y-axis
+barplot(pve, ylab = "Precent of Variance Explained",
+     names.arg=paste0("PC",1:length(pve)), las=2, axes = FALSE)
+axis(2, at=pve, labels=round(pve,2)*100 )
+```
+
+
+
+# Examine the PC loadings
+
+How much do the original variables contribute to the new PCs that we have calculated? To get this data we can look at the '$rotation' component of the returned PCA object.
+
+```{r}
+head(wisc.pr$rotation[,1:3])
+```
+
+Focus in on PC1
+
+```{r}
+head(wisc.pr$rotation[,1])
+```
+
+>Q9. For the first principal component, what is the component of the loading vector (i.e. wisc.pr$rotation[,1]) for the feature concave.points_mean?
+
+```{r}
+wisc.pr$rotation["concave.points_mean", 1]
+```
+
+There is a complicated mix of variables that go together to make up PC1- ie there are many of the original variables that together contribute highly to PC1/ 
+```{r}
+loadings <- as.data.frame(wisc.pr$rotation)
+ggplot(loadings) + aes(PC1, rownames(loadings)) +geom_col()
+```
+
+#3 Hierarchical Clustering
+
+The goal of this section is to do hierarchical clustering of the original data.
+
+First we will scale the data
+
+```{r}
+wisc.hclust <- hclust(dist(scale(wisc.data)))
+```
+```{r}
+plot(wisc.hclust)
+```
+Cut this tree to yield cluster membership vector with 'cutree()' function
+
+```{r}
+grps <- (cutree(wisc.hclust, h=19))
+table(grps)
+```
+```{r}
+table(grps, diagnosis)
+```
+
+>Q11. Using the plot() and abline() functions, what is the height at which the clustering model has 4 clusters?
+
+19
+
+# Combine methods: PCA and HCLUST
+
+My PCA results were interesting as they showed a separation of M and B samples along PC1. 
+
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=diagnosis)
+```
+I want to cluster my PCA results- that is use 'wisc.pr$x' as input to 'hclust()'. 
+
+Try clustering 3 PCs, that is PC1, PC2 and PC3 as input.
+```{r}
+d <- dist(wisc.pr$x[,1:3])
+
+wisc.pr.hclust <- hclust(d, method="ward.D2")
+```
+
+And the tree result figure:
+```{r}
+plot(wisc.pr.hclust)
+```
+
+Let's cut the tree into 2 groups:
+
+```{r}
+grps <- cutree(wisc.pr.hclust, k=2)
+table(grps)
+```
+
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=grps)
+```
+
+How well do the two clusters separate the M and B diagnoses
+
+```{r}
+table(grps, diagnosis)
+```
+
+>Q12. Can you find a better cluster vs diagnoses match by cutting into a different number of clusters between 2 and 10?
+
+No the way we did it yielded the best results.
+
+```{r}
+(179+333)/nrow(wisc.data)
+```
+
+
+>Q13. Which method gives your favorite results for the same data.dist dataset? Explain your reasoning.
+
+The ward.d2 method is my favorite as it gives the cleanest looking data in my opinion.
+
+>Q15. How well does the newly created model with four clusters separate out the two diagnoses?
+
+It separates malignant into group 1 and benign into group 2, although there is some overlap from one group to another. 
+
+
+
